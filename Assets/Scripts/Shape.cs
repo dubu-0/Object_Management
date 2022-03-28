@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 [DisallowMultipleComponent]
-public class Cube : MonoBehaviour, IPersistableObject
+public class Shape : MonoBehaviour, IPersistableObject
 {
+	public int ID { get; private set; } = -1;
+	
 	public void Save(GameDataWriter writer)
 	{
 		writer.Write(transform.localPosition);
@@ -16,9 +19,14 @@ public class Cube : MonoBehaviour, IPersistableObject
 		transform.localRotation = reader.ReadQuaternion();
 		transform.localScale = reader.ReadVector3();
 	}
-
-	public void Destroy(float time = 0)
+	
+	public void InitID(int id)
 	{
-		Object.Destroy(gameObject, time);
+		if (ID < 0 && id >= 0)
+			ID = id;
+		else if (ID >= 0)
+			throw new Exception("Already inited");
+		else
+			throw new ArgumentOutOfRangeException(nameof(id), "id < 0");
 	}
 }

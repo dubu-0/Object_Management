@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class Game : MonoBehaviour, IPersistableObject
 {
 	[SerializeField] private PersistentStorage _storage;
-	[SerializeField] private Cube _prefab;
+	[SerializeField] private ShapeFactory _shapeFactory;
 	[SerializeField] private KeyCode _createPrefabKeyCode = KeyCode.C;
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
 
-	private readonly List<IPersistableObject> _instances = new List<IPersistableObject>();
+	private readonly List<Shape> _shapes = new List<Shape>();
 
 	private void Update()
 	{
 		if (Input.GetKeyDown(_createPrefabKeyCode))
-			CreatePrefabInstance();
+			CreateShape();
 		else if (Input.GetKeyDown(_beginNewGameKeyCode))
 			BeginNewGame();
 		else if (Input.GetKeyDown(_saveKeyCode))
@@ -27,9 +26,12 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	public void Save(GameDataWriter writer)
 	{
-		writer.Write(_instances.Count);
-		foreach (var instance in _instances) 
-			instance.Save(writer);
+		writer.Write(_shapes.Count);
+		foreach (var shape in _shapes)
+		{
+			writer.Write(shape.ID);
+			shape.Save(writer);
+		}
 	}
 
 	public void Load(GameDataReader reader)
@@ -40,31 +42,23 @@ public class Game : MonoBehaviour, IPersistableObject
 		
 		for (var i = 0; i < count; i++)
 		{
-			var instance = Instantiate(_prefab);
-			instance.Load(reader);
-			_instances.Add(instance);
+			var id = reader.ReadInt();
+			var shape = _shapeFactory.Create(id);
+			shape.Load(reader);
+			_shapes.Add(shape);
 		}
 	}
 
-	public void Destroy(float time = 0)
+	private void CreateShape()
 	{
-		Object.Destroy(gameObject, time);
-	}
-
-	private void CreatePrefabInstance()
-	{
-		var instance = Instantiate(_prefab);
-		instance.transform.localPosition = Random.insideUnitSphere * 5f;
-		instance.transform.localRotation = Random.rotation;
-		instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
-		_instances.Add(instance);
+		_shapes.Add(_shapeFactory.CreateRandom());
 	}
 
 	private void BeginNewGame()
 	{
-		foreach (var instance in _instances) 
-			instance.Destroy();
+		foreach (var shape in _shapes) 
+			Destroy(shape.gameObject);
 		
-		_instances.Clear();
+		_shapes.Clear();
 	}
 }
