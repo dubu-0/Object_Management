@@ -2,10 +2,22 @@
 using UnityEngine;
 
 [DisallowMultipleComponent]
+[RequireComponent(typeof(MeshRenderer))]
 public class Shape : MonoBehaviour, IPersistableObject
 {
+	private static readonly int ColorID = Shader.PropertyToID("_Color");
+	private static MaterialPropertyBlock _block;
+	private MeshRenderer _meshRenderer;
+
 	public int ID { get; private set; } = -1;
-	
+	public int MaterialID { get; private set; } = -1;
+	public Color Color { get; private set; }
+
+	private void Awake()
+	{
+		_meshRenderer = GetComponent<MeshRenderer>();
+	}
+
 	public void Save(GameDataWriter writer)
 	{
 		writer.Write(transform.localPosition);
@@ -19,7 +31,20 @@ public class Shape : MonoBehaviour, IPersistableObject
 		transform.localRotation = reader.ReadQuaternion();
 		transform.localScale = reader.ReadVector3();
 	}
-	
+
+	public void SetNewMaterial(Material material)
+	{
+		_meshRenderer.material = material;
+	}
+
+	public void SetNewColor(Color color)
+	{
+		_block ??= new MaterialPropertyBlock();
+		_block.SetColor(ColorID, color);
+		Color = color;
+		_meshRenderer.SetPropertyBlock(_block);
+	}
+
 	public void InitID(int id)
 	{
 		if (ID < 0 && id >= 0)
@@ -28,5 +53,15 @@ public class Shape : MonoBehaviour, IPersistableObject
 			throw new Exception("Already inited");
 		else
 			throw new ArgumentOutOfRangeException(nameof(id), "id < 0");
+	}
+	
+	public void InitMaterialID(int materialID)
+	{
+		if (MaterialID < 0 && materialID >= 0)
+			MaterialID = materialID;
+		else if (MaterialID >= 0)
+			throw new Exception("Already inited");
+		else
+			throw new ArgumentOutOfRangeException(nameof(materialID), "id < 0");
 	}
 }

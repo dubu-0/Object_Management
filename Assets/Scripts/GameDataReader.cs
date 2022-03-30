@@ -44,4 +44,14 @@ public class GameDataReader : IDisposable
 		quaternion.w = _binaryReader.ReadSingle();
 		return quaternion;
 	}
+
+	public Color ReadColor()
+	{
+		Color color;
+		color.r = _binaryReader.ReadSingle();
+		color.g = _binaryReader.ReadSingle();
+		color.b = _binaryReader.ReadSingle();
+		color.a = _binaryReader.ReadSingle();
+		return color;
+	}
 }

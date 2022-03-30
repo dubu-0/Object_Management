@@ -14,7 +14,7 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(_createPrefabKeyCode))
+		if (Input.GetKey(_createPrefabKeyCode))
 			CreateShape();
 		else if (Input.GetKeyDown(_beginNewGameKeyCode))
 			BeginNewGame();
@@ -30,6 +30,8 @@ public class Game : MonoBehaviour, IPersistableObject
 		foreach (var shape in _shapes)
 		{
 			writer.Write(shape.ID);
+			writer.Write(shape.MaterialID);
+			writer.Write(shape.Color);
 			shape.Save(writer);
 		}
 	}
@@ -43,7 +45,9 @@ public class Game : MonoBehaviour, IPersistableObject
 		for (var i = 0; i < count; i++)
 		{
 			var id = reader.ReadInt();
-			var shape = _shapeFactory.Create(id);
+			var materialID = reader.ReadInt();
+			var color = reader.ReadColor();
+			var shape = _shapeFactory.Create(color, id, materialID);
 			shape.Load(reader);
 			_shapes.Add(shape);
 		}

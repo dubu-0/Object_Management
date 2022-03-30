@@ -40,4 +40,12 @@ public class GameDataWriter : IDisposable
 		_binaryWriter.Write(value.z);
 		_binaryWriter.Write(value.w);
 	}
+
+	public void Write(Color color)
+	{
+		_binaryWriter.Write(color.r);
+		_binaryWriter.Write(color.g);
+		_binaryWriter.Write(color.b);
+		_binaryWriter.Write(color.a);
+	}
 }
