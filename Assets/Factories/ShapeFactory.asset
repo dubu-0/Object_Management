@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3f07a17260c4cbb9d1d0cd990ff1a7d, type: 3}
   m_Name: ShapeFactory
   m_EditorClassIdentifier: 
+  _recycle: 1
   _shapes:
   - {fileID: -2133968697200227258, guid: 382d23bdc290b084bb49a88ac5dc4936, type: 3}
   - {fileID: -610695837408845074, guid: 53a77d02e23d4324f8ceac850f75be87, type: 3}

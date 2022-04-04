@@ -19,37 +19,15 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	private void Update()
 	{
-		_creationProgress += CreationSpeed * Time.deltaTime;
+		HandleCreation();
+		HandleDestruction();
 
-		while (_creationProgress >= 1f)
-		{
-			CreateShape();
-			_creationProgress -= 1f;
-		}
-		
-		if (HasShapes)
-		{
-			_destructionProgress += DestructionSpeed * Time.deltaTime;
-
-			while (_destructionProgress >= 1f)
-			{
-				DestroyRandomShape();
-				_destructionProgress -= 1f;
-			}
-		}
-		
 		if (Input.GetKeyDown(_beginNewGameKeyCode))
-		{
 			BeginNewGame();
-		}
 		else if (Input.GetKeyDown(_saveKeyCode))
-		{
 			_storage.Save(this);
-		}
 		else if (Input.GetKeyDown(_loadKeyCode))
-		{
 			_storage.Load(this);
-		}
 	}
 
 	public void Save(GameDataWriter writer)
@@ -90,13 +68,13 @@ public class Game : MonoBehaviour, IPersistableObject
 	private void DestroyLastShape()
 	{
 		var last = _shapes.Count - 1;
-		Destroy(_shapes[last].gameObject);
+		_shapeFactory.Reclaim(_shapes[last]);
 		_shapes.RemoveAt(last);
 	}
 
 	private void DestroyShapeAt(int index)
 	{
-		Destroy(_shapes[index].gameObject);
+		_shapeFactory.Reclaim(_shapes[index]);
 
 		var last = _shapes.Count - 1;
 		_shapes[index] = _shapes[last];
@@ -109,11 +87,37 @@ public class Game : MonoBehaviour, IPersistableObject
 		DestroyShapeAt(randomIndex);
 	}
 
+	private void HandleDestruction()
+	{
+		if (!HasShapes)
+			return;
+
+		_destructionProgress += DestructionSpeed * Time.deltaTime;
+
+		while (_destructionProgress >= 1f)
+		{
+			DestroyRandomShape();
+			_destructionProgress -= 1f;
+		}
+	}
+
 	private void BeginNewGame()
 	{
 		foreach (var shape in _shapes)
-			Destroy(shape.gameObject);
+			_shapeFactory.Reclaim(shape);
 
 		_shapes.Clear();
+	}
+
+
+	private void HandleCreation()
+	{
+		_creationProgress += CreationSpeed * Time.deltaTime;
+
+		while (_creationProgress >= 1f)
+		{
+			CreateShape();
+			_creationProgress -= 1f;
+		}
 	}
 }

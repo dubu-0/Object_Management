@@ -13,6 +13,9 @@ public class Shape : MonoBehaviour, IPersistableObject
 	public int MaterialID { get; private set; } = -1;
 	public Color Color { get; private set; }
 
+	public bool ShapeIDNotSet => ID < 0;
+	public bool MaterialIDNotSet => MaterialID < 0;
+
 	private void Awake()
 	{
 		_meshRenderer = GetComponent<MeshRenderer>();
@@ -32,12 +35,12 @@ public class Shape : MonoBehaviour, IPersistableObject
 		transform.localScale = reader.ReadVector3();
 	}
 
-	public void SetNewMaterial(Material material)
+	public void SetMaterial(Material material)
 	{
 		_meshRenderer.material = material;
 	}
 
-	public void SetNewColor(Color color)
+	public void SetColor(Color color)
 	{
 		_block ??= new MaterialPropertyBlock();
 		_block.SetColor(ColorID, color);
