@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 [CreateAssetMenu(menuName = "Create SO/ShapeFactory", fileName = "ShapeFactory", order = 0)]
@@ -12,12 +12,13 @@ public class ShapeFactory : ScriptableObject
 	[SerializeField] private Material[] _materials;
 
 	private List<Shape>[] _pools;
+	private Shape _instance;
+	private Scene _poolScene;
 
 	public Shape Create(Color color, int shapeID = 0, int materialID = 0)
 	{
-		Shape instance = null;
-		Setup(ref instance, shapeID, materialID, color);
-		return instance;
+		SetupShape(shapeID, materialID, color);
+		return _instance;
 	}
 
 	public Shape CreateRandom()
@@ -30,9 +31,8 @@ public class ShapeFactory : ScriptableObject
 			0.25f, 1f, 
 			1f, 1f);
 
-		Shape instance = null;
-		Setup(ref instance, randomID, randomMaterialID, randomColor);
-		return instance;
+		SetupShape(randomID, randomMaterialID, randomColor);
+		return _instance;
 	}
 
 	public void Reclaim(Shape shape)
@@ -48,7 +48,7 @@ public class ShapeFactory : ScriptableObject
 		}
 	}
 
-	private void Setup([NotNull] ref Shape instance, int shapeID, int materialID, Color color)
+	private void SetupShape(int shapeID, int materialID, Color color)
 	{
 		if (_recycle)
 		{
@@ -60,32 +60,36 @@ public class ShapeFactory : ScriptableObject
 
 			if (last >= 0)
 			{
-				instance = pool[last];
-				instance.gameObject.SetActive(true);
+				_instance = pool[last];
+				_instance.gameObject.SetActive(true);
 				pool.RemoveAt(last);
 			}
+			else
+			{
+				_instance = Instantiate(_shapes[shapeID]);
+			}
+			
+			SceneManager.MoveGameObjectToScene(_instance.gameObject, _poolScene);
 		}
 		
-		if (instance == null)
-			instance = Instantiate(_shapes[shapeID]);
-		
-		instance.transform.localPosition = Random.insideUnitSphere * 5f;
-		instance.transform.localRotation = Random.rotation;
-		instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
+		_instance.transform.localPosition = Random.insideUnitSphere * 5f;
+		_instance.transform.localRotation = Random.rotation;
+		_instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
 
-		if (instance.ShapeIDNotSet)
-			instance.InitID(shapeID);
-		if (instance.MaterialIDNotSet)
-			instance.InitMaterialID(materialID);
+		if (_instance.ShapeIDNotSet)
+			_instance.InitID(shapeID);
+		if (_instance.MaterialIDNotSet)
+			_instance.InitMaterialID(materialID);
 		
-		instance.SetMaterial(_materials[materialID]);
-		instance.SetColor(color);
+		_instance.SetMaterial(_materials[materialID]);
+		_instance.SetColor(color);
 	}
 
 	private void InitPools()
 	{
 		if (_pools == null)
 		{
+			_poolScene = SceneManager.CreateScene(name);
 			_pools = new List<Shape>[_shapes.Length];
 			for (var i = 0; i < _pools.Length; i++)
 				_pools[i] = new List<Shape>(500);

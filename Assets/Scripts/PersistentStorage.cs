@@ -9,7 +9,6 @@ public class PersistentStorage : MonoBehaviour
 	private void Awake()
 	{
 		_path = Path.Combine(Application.persistentDataPath, FileName);
-		Debug.Log($"Path for saved files {_path}");
 	}
 
 	public void Save(IPersistableObject persistableObject)
@@ -20,7 +19,7 @@ public class PersistentStorage : MonoBehaviour
 
 	public void Load(IPersistableObject persistableObject)
 	{
-		using var reader = new GameDataReader(new BinaryReader(File.Open(_path, FileMode.Open)));
+		using var reader = new GameDataReader(new BinaryReader(File.Open(_path, FileMode.Open))); 
 		persistableObject.Load(reader);
 	}
 }

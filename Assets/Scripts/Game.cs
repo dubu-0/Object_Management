@@ -13,8 +13,8 @@ public class Game : MonoBehaviour, IPersistableObject
 	private float _creationProgress;
 	private float _destructionProgress;
 
-	public float CreationSpeed { get; set; }
-	public float DestructionSpeed { set; get; }
+	public float CreationSpeed { get; private set; }
+	public float DestructionSpeed { get; private set; }
 	private bool HasShapes => _shapes.Count > 0;
 
 	private void Update()
@@ -65,13 +65,6 @@ public class Game : MonoBehaviour, IPersistableObject
 		_shapes.Add(_shapeFactory.CreateRandom());
 	}
 
-	private void DestroyLastShape()
-	{
-		var last = _shapes.Count - 1;
-		_shapeFactory.Reclaim(_shapes[last]);
-		_shapes.RemoveAt(last);
-	}
-
 	private void DestroyShapeAt(int index)
 	{
 		_shapeFactory.Reclaim(_shapes[index]);
@@ -96,6 +89,9 @@ public class Game : MonoBehaviour, IPersistableObject
 
 		while (_destructionProgress >= 1f)
 		{
+			if (!HasShapes)
+				return;
+			
 			DestroyRandomShape();
 			_destructionProgress -= 1f;
 		}
