@@ -5,32 +5,57 @@ public class Game : MonoBehaviour, IPersistableObject
 {
 	[SerializeField] private PersistentStorage _storage;
 	[SerializeField] private ShapeFactory _shapeFactory;
-	[SerializeField] private KeyCode _createObjectKeyCode = KeyCode.C;
-	[SerializeField] private KeyCode _destroyObjectKeyCode = KeyCode.X;
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
 
 	private readonly List<Shape> _shapes = new List<Shape>();
+	private float _creationProgress;
+	private float _destructionProgress;
+
+	public float CreationSpeed { get; set; }
+	public float DestructionSpeed { set; get; }
 	private bool HasShapes => _shapes.Count > 0;
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(_createObjectKeyCode))
+		_creationProgress += CreationSpeed * Time.deltaTime;
+
+		while (_creationProgress >= 1f)
+		{
 			CreateShape();
-		else if (Input.GetKeyDown(_destroyObjectKeyCode) && HasShapes)
-			DestroyRandomShape();
-		else if (Input.GetKeyDown(_beginNewGameKeyCode))
+			_creationProgress -= 1f;
+		}
+		
+		if (HasShapes)
+		{
+			_destructionProgress += DestructionSpeed * Time.deltaTime;
+
+			while (_destructionProgress >= 1f)
+			{
+				DestroyRandomShape();
+				_destructionProgress -= 1f;
+			}
+		}
+		
+		if (Input.GetKeyDown(_beginNewGameKeyCode))
+		{
 			BeginNewGame();
+		}
 		else if (Input.GetKeyDown(_saveKeyCode))
+		{
 			_storage.Save(this);
-		else if (Input.GetKeyDown(_loadKeyCode)) 
+		}
+		else if (Input.GetKeyDown(_loadKeyCode))
+		{
 			_storage.Load(this);
+		}
 	}
 
 	public void Save(GameDataWriter writer)
 	{
 		writer.Write(_shapes.Count);
+
 		foreach (var shape in _shapes)
 		{
 			writer.Write(shape.ID);
@@ -45,7 +70,7 @@ public class Game : MonoBehaviour, IPersistableObject
 		BeginNewGame();
 
 		var count = reader.ReadInt();
-		
+
 		for (var i = 0; i < count; i++)
 		{
 			var id = reader.ReadInt();
@@ -68,11 +93,11 @@ public class Game : MonoBehaviour, IPersistableObject
 		Destroy(_shapes[last].gameObject);
 		_shapes.RemoveAt(last);
 	}
-	
+
 	private void DestroyShapeAt(int index)
 	{
 		Destroy(_shapes[index].gameObject);
-		
+
 		var last = _shapes.Count - 1;
 		_shapes[index] = _shapes[last];
 		_shapes.RemoveAt(last);
@@ -86,9 +111,9 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	private void BeginNewGame()
 	{
-		foreach (var shape in _shapes) 
+		foreach (var shape in _shapes)
 			Destroy(shape.gameObject);
-		
+
 		_shapes.Clear();
 	}
 }
