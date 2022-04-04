@@ -8,14 +8,20 @@ public class Game : MonoBehaviour, IPersistableObject
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
-
-	private readonly List<Shape> _shapes = new List<Shape>();
 	private float _creationProgress;
 	private float _destructionProgress;
+
+	private List<Shape> _shapes;
 
 	public float CreationSpeed { get; private set; }
 	public float DestructionSpeed { get; private set; }
 	private bool HasShapes => _shapes.Count > 0;
+
+	private void Start()
+	{
+		_shapes = new List<Shape>(10000 * _shapeFactory.ShapeTypeCount);
+
+	}
 
 	private void Update()
 	{
@@ -91,7 +97,7 @@ public class Game : MonoBehaviour, IPersistableObject
 		{
 			if (!HasShapes)
 				return;
-			
+
 			DestroyRandomShape();
 			_destructionProgress -= 1f;
 		}

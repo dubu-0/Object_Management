@@ -57,7 +57,7 @@ public class Shape : MonoBehaviour, IPersistableObject
 		else
 			throw new ArgumentOutOfRangeException(nameof(id), "id < 0");
 	}
-	
+
 	public void InitMaterialID(int materialID)
 	{
 		if (MaterialID < 0 && materialID >= 0)

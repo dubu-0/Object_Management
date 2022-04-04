@@ -10,10 +10,12 @@ public class ShapeFactory : ScriptableObject
 	[SerializeField] private bool _recycle;
 	[SerializeField] private Shape[] _shapes;
 	[SerializeField] private Material[] _materials;
+	private Shape _instance;
 
 	private List<Shape>[] _pools;
-	private Shape _instance;
 	private Scene _poolScene;
+
+	public int ShapeTypeCount => _shapes.Length;
 
 	public Shape Create(Color color, int shapeID = 0, int materialID = 0)
 	{
@@ -26,9 +28,9 @@ public class ShapeFactory : ScriptableObject
 		var randomID = Random.Range(0, _shapes.Length);
 		var randomMaterialID = Random.Range(0, _materials.Length);
 		var randomColor = Random.ColorHSV(
-			0f, 1f, 
+			0f, 1f,
 			0.5f, 1f,
-			0.25f, 1f, 
+			0.25f, 1f,
 			1f, 1f);
 
 		SetupShape(randomID, randomMaterialID, randomColor);
@@ -39,14 +41,19 @@ public class ShapeFactory : ScriptableObject
 	{
 		if (_recycle)
 		{
+			if (_pools == null)
+				InitPools();
+
 			shape.gameObject.SetActive(false);
 			_pools[shape.ID].Add(shape);
 		}
+
 		else
 		{
 			Destroy(shape.gameObject);
 		}
 	}
+
 
 	private void SetupShape(int shapeID, int materialID, Color color)
 	{
@@ -68,19 +75,25 @@ public class ShapeFactory : ScriptableObject
 			{
 				_instance = Instantiate(_shapes[shapeID]);
 			}
-			
+
 			SceneManager.MoveGameObjectToScene(_instance.gameObject, _poolScene);
 		}
-		
+		else
+		{
+			_instance = Instantiate(_shapes[shapeID]);
+		}
+
 		_instance.transform.localPosition = Random.insideUnitSphere * 5f;
 		_instance.transform.localRotation = Random.rotation;
 		_instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
 
 		if (_instance.ShapeIDNotSet)
 			_instance.InitID(shapeID);
+
 		if (_instance.MaterialIDNotSet)
 			_instance.InitMaterialID(materialID);
-		
+
+
 		_instance.SetMaterial(_materials[materialID]);
 		_instance.SetColor(color);
 	}
@@ -89,14 +102,40 @@ public class ShapeFactory : ScriptableObject
 	{
 		if (_pools == null)
 		{
-			_poolScene = SceneManager.CreateScene(name);
 			_pools = new List<Shape>[_shapes.Length];
+
 			for (var i = 0; i < _pools.Length; i++)
-				_pools[i] = new List<Shape>(500);
+				_pools[i] = new List<Shape>(10000);
+
+			if (!_poolScene.isLoaded)
+				_poolScene = SceneManager.CreateScene(name);
+
+			SurviveHotReload();
 		}
 		else
 		{
 			throw new Exception("Already inited");
+		}
+	}
+
+	private void SurviveHotReload()
+	{
+		if (Application.isEditor)
+		{
+			_poolScene = SceneManager.GetSceneByName(name);
+
+			if (_poolScene.isLoaded)
+			{
+				var rootObjects = _poolScene.GetRootGameObjects();
+
+				foreach (var rootObject in rootObjects)
+				{
+					var shape = rootObject.GetComponent<Shape>();
+
+					if (!shape.gameObject.activeSelf)
+						_pools[shape.ID].Add(shape);
+				}
+			}
 		}
 	}
 }
