@@ -11,11 +11,12 @@ public class Game : MonoBehaviour, IPersistableObject
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
+	[SerializeField] private int _levelCount;
 
-	private const string Level1Name = "Level 1";
 	private float _creationProgress;
 	private float _destructionProgress;
 	private List<Shape> _shapes;
+	private int _loadedLevelBuildIndex;
 
 	public float CreationSpeed { get; private set; }
 	public float DestructionSpeed { get; private set; }
@@ -24,7 +25,7 @@ public class Game : MonoBehaviour, IPersistableObject
 	private void Start()
 	{
 		_shapes = new List<Shape>(10000 * _shapeFactory.ShapeTypeCount);
-		LoadLevel();
+		LoadLevel(1);
 	}
 
 	private void Update()
@@ -38,6 +39,18 @@ public class Game : MonoBehaviour, IPersistableObject
 			_storage.Save(this);
 		else if (Input.GetKeyDown(_loadKeyCode))
 			_storage.Load(this);
+		else
+		{
+			for (var i = 1; i <= _levelCount; i++)
+			{
+				if (Input.GetKeyDown(KeyCode.Alpha0 + i))
+				{
+					BeginNewGame();
+					LoadLevel(i);
+					return;
+				}
+			}
+		}
 	}
 
 	public void Save(GameDataWriter writer)
@@ -70,26 +83,32 @@ public class Game : MonoBehaviour, IPersistableObject
 		}
 	}
 
-	private void LoadLevel()
+	private void LoadLevel(int buildIndex)
 	{
 		if (Application.isEditor)
 		{
-			var level = SceneManager.GetSceneByName(Level1Name);
-			if (level.isLoaded)
+			for (var i = 0; i < SceneManager.sceneCount; i++)
 			{
-				SceneManager.SetActiveScene(level);
-				return;
+				var level = SceneManager.GetSceneAt(i);
+				if (level.name.Contains("Level "))
+					SceneManager.SetActiveScene(level);
 			}
 		}
 		
-		StartCoroutine(LevelLoading());
+		StartCoroutine(LevelLoading(buildIndex));
 	}
 	
-	private IEnumerator LevelLoading()
+	private IEnumerator LevelLoading(int buildIndex)
 	{
 		enabled = false;
-		yield return SceneManager.LoadSceneAsync(Level1Name, LoadSceneMode.Additive);
-		SceneManager.SetActiveScene(SceneManager.GetSceneByName(Level1Name));
+
+		var anyLevel = _loadedLevelBuildIndex > 0;
+		if (anyLevel)
+			yield return SceneManager.UnloadSceneAsync(_loadedLevelBuildIndex);
+
+		yield return SceneManager.LoadSceneAsync(buildIndex, LoadSceneMode.Additive);
+		SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(buildIndex));
+		_loadedLevelBuildIndex = buildIndex;
 		enabled = true;
 	}
 
