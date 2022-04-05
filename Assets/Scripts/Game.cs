@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class Game : MonoBehaviour, IPersistableObject
 {
@@ -8,9 +11,10 @@ public class Game : MonoBehaviour, IPersistableObject
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
+
+	private const string Level1Name = "Level 1";
 	private float _creationProgress;
 	private float _destructionProgress;
-
 	private List<Shape> _shapes;
 
 	public float CreationSpeed { get; private set; }
@@ -20,7 +24,7 @@ public class Game : MonoBehaviour, IPersistableObject
 	private void Start()
 	{
 		_shapes = new List<Shape>(10000 * _shapeFactory.ShapeTypeCount);
-
+		LoadLevel();
 	}
 
 	private void Update()
@@ -64,6 +68,29 @@ public class Game : MonoBehaviour, IPersistableObject
 			shape.Load(reader);
 			_shapes.Add(shape);
 		}
+	}
+
+	private void LoadLevel()
+	{
+		if (Application.isEditor)
+		{
+			var level = SceneManager.GetSceneByName(Level1Name);
+			if (level.isLoaded)
+			{
+				SceneManager.SetActiveScene(level);
+				return;
+			}
+		}
+		
+		StartCoroutine(LevelLoading());
+	}
+	
+	private IEnumerator LevelLoading()
+	{
+		enabled = false;
+		yield return SceneManager.LoadSceneAsync(Level1Name, LoadSceneMode.Additive);
+		SceneManager.SetActiveScene(SceneManager.GetSceneByName(Level1Name));
+		enabled = true;
 	}
 
 	private void CreateShape()
@@ -110,8 +137,7 @@ public class Game : MonoBehaviour, IPersistableObject
 
 		_shapes.Clear();
 	}
-
-
+	
 	private void HandleCreation()
 	{
 		_creationProgress += CreationSpeed * Time.deltaTime;
