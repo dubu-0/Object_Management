@@ -55,6 +55,7 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	public void Save(GameDataWriter writer)
 	{
+		writer.Write(SceneManager.GetActiveScene().buildIndex);
 		writer.Write(_shapes.Count);
 
 		foreach (var shape in _shapes)
@@ -70,8 +71,11 @@ public class Game : MonoBehaviour, IPersistableObject
 	{
 		BeginNewGame();
 
+		var buildIndex = reader.ReadInt();
 		var count = reader.ReadInt();
-
+		
+		LoadLevel(buildIndex);
+		
 		for (var i = 0; i < count; i++)
 		{
 			var id = reader.ReadInt();
@@ -102,8 +106,8 @@ public class Game : MonoBehaviour, IPersistableObject
 	{
 		enabled = false;
 
-		var anyLevel = _loadedLevelBuildIndex > 0;
-		if (anyLevel)
+		var atAnyLevel = _loadedLevelBuildIndex > 0;
+		if (atAnyLevel)
 			yield return SceneManager.UnloadSceneAsync(_loadedLevelBuildIndex);
 
 		yield return SceneManager.LoadSceneAsync(buildIndex, LoadSceneMode.Additive);
