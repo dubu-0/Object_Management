@@ -2,5 +2,6 @@
 
 public class SpawnZone : MonoBehaviour
 {
-	public Vector3 SpawnPoint => Random.insideUnitSphere * 5f;
+	// Spawn point relative to this transform
+	public Vector3 SpawnPoint => transform.TransformPoint(Random.insideUnitSphere);
 }
