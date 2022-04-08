@@ -83,17 +83,12 @@ public class ShapeFactory : ScriptableObject
 			_instance = Instantiate(_shapes[shapeID]);
 		}
 
-		_instance.transform.localPosition = Random.insideUnitSphere * 5f;
-		_instance.transform.localRotation = Random.rotation;
-		_instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
-
 		if (_instance.ShapeIDNotSet)
 			_instance.InitID(shapeID);
 
 		if (_instance.MaterialIDNotSet)
 			_instance.InitMaterialID(materialID);
-
-
+		
 		_instance.SetMaterial(_materials[materialID]);
 		_instance.SetColor(color);
 	}

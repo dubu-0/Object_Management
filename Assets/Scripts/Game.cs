@@ -8,6 +8,7 @@ public class Game : MonoBehaviour, IPersistableObject
 {
 	[SerializeField] private PersistentStorage _storage;
 	[SerializeField] private ShapeFactory _shapeFactory;
+	[SerializeField] private SpawnZone _spawnZone;
 	[SerializeField] private KeyCode _beginNewGameKeyCode = KeyCode.N;
 	[SerializeField] private KeyCode _saveKeyCode = KeyCode.S;
 	[SerializeField] private KeyCode _loadKeyCode = KeyCode.L;
@@ -118,7 +119,11 @@ public class Game : MonoBehaviour, IPersistableObject
 
 	private void CreateShape()
 	{
-		_shapes.Add(_shapeFactory.CreateRandom());
+		var instance = _shapeFactory.CreateRandom();
+		instance.transform.localPosition = _spawnZone.SpawnPoint;
+		instance.transform.localRotation = Random.rotation;
+		instance.transform.localScale = Vector3.one * Random.Range(0.1f, 1f);
+		_shapes.Add(instance);
 	}
 
 	private void DestroyShapeAt(int index)
