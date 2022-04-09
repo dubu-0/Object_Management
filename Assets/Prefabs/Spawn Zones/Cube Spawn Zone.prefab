@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1324103183375024265}
-  - component: {fileID: 1324103183375024264}
+  - component: {fileID: 5269053330100877444}
   m_Layer: 0
-  m_Name: Spawn Zone
+  m_Name: Cube Spawn Zone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31,7 +31,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1324103183375024264
+--- !u!114 &5269053330100877444
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -40,7 +40,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1324103183375024266}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b8ec2009d6f4929868363356d694c10, type: 3}
+  m_Script: {fileID: 11500000, guid: 664e1ab11eda4e7d91a51c8dc66b16ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _surfaceOnly: 0
